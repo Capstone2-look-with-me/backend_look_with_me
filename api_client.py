@@ -10,6 +10,6 @@ class APIClient:
         Fetch all contacts for a specific user from the external API
         """
         headers = {"Authorization": f"Bearer {access_token}"}
-        response = requests.get(f"{self.base_url}/contacts/{user_id}", headers=headers)
+        response = requests.get(f"{self.base_url}/getAllContactsByUserId?userId={user_id}", headers=headers)
         response.raise_for_status()  # Raise exception for non-200 responses
         return response.json()

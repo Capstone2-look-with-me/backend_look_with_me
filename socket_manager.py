@@ -44,25 +44,29 @@ async def initialize(sid, data):
 @sio.event
 async def recognize_face(sid, data):
     """
-    Process image URL and recognize faces
+    Process image encoding and recognize faces
     """
     try:
-        user_id = data.get('userId')
-        image_url = data.get('imageUrl')
-        image_id = data.get('imageId')
+        user_id = data.get('user_id')
+        image_id = data.get('_id')
+        image_encoding = data.get('image_encoding')
         
-        if not all([user_id, image_url, image_id]):
-            await sio.emit('error', {'message': 'userId, imageUrl and imageId are required'}, to=sid)
+        if not all([user_id, image_id, image_encoding]):
+            await sio.emit('error', {'message': 'user_id, _id (image_id) and image_encoding are required'}, to=sid)
             return
             
         # Perform face recognition
-        name = await face_service.recognize_face(user_id, image_url)
+        contact_id, name = await face_service.recognize_face(user_id, image_encoding)
         
         # Send result back to client
-        await sio.emit('recognition_result', {
-            'imageId': image_id,
+        result = {
+            'image_id': image_id,
+            'user_id': contact_id,
+            'contact_id': contact_id,
             'name': name
-        }, to=sid)
+        }
+        
+        await sio.emit('recognition_result', result, to=sid)
         
     except Exception as e:
         await sio.emit('error', {'message': str(e)}, to=sid)
